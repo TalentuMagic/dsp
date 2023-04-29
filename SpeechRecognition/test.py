@@ -29,20 +29,5 @@ def receiveENSpeech_toText(trigger=bool):
         print(
             "Could not request results from Google Speech Recognition service; {0}".format(e))
 
-    # recognize speech using Wit.ai
-    # Wit.ai keys are 32-character uppercase alphanumeric strings
-    WIT_AI_KEY = "2RIV6NRHRMNL7GNSTQARRH2JHFE2WH3I"
-    try:
-        print("Wit.ai thinks you said:\n" +
-              recognizer.recognize_wit(audio, key=WIT_AI_KEY))
-    except sr.UnknownValueError:
-        print("Wit.ai could not understand the audio")
-    except sr.RequestError as e:
-        print("Could not request results from Wit.ai service; {0}".format(e))
-
-    # write audio to a WAV file
-    with open("microphone-results.wav", "wb") as f:
-        f.write(audio.get_wav_data())
-
 
 receiveENSpeech_toText(True)
