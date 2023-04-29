@@ -13,7 +13,8 @@ def receiveENSpeech_toText(trigger=bool):
 
     # recognize speech using Sphinx
     try:
-        print("Sphinx thinks you said:\n" + recognizer.recognize_sphinx(audio))
+        print("Sphinx thinks you said:\n" +
+              recognizer.recognize_sphinx(audio))
     except sr.UnknownValueError:
         print("Sphinx could not understand the audio")
     except sr.RequestError as e:
@@ -22,12 +23,16 @@ def receiveENSpeech_toText(trigger=bool):
     # recognize speech using Google Speech Recognition
     try:
         print("Google Speech Recognition thinks you said:\n" +
-              recognizer.recognize_google(audio))
+              recognizer.recognize_google(audio, language='ro-RO'))
     except sr.UnknownValueError:
         print("Google Speech Recognition could not understand the audio")
     except sr.RequestError as e:
         print(
             "Could not request results from Google Speech Recognition service; {0}".format(e))
+
+    # write audio to a WAV file
+    with open("microphone-results.wav", "wb") as f:
+        f.write(audio.get_wav_data())
 
 
 receiveENSpeech_toText(True)
