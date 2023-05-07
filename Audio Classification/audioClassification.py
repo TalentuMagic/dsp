@@ -14,7 +14,7 @@ import seaborn
 import numpy as np
 from tqdm import tqdm
 import os
-import time
+from datetime import datetime
 
 # the given input WAV file to be analysed
 # person talking is identified as 'children_playing'
@@ -111,10 +111,10 @@ num_epochs = 100
 num_batch_size = 32
 checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='./audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
-start = time.time()
+start = datetime.now()
 model.fit(X_train, y_train, batch_size=num_batch_size, epochs=num_epochs,
           validation_data=(X_test, y_test), callbacks=[checkpointer], verbose='1')
-duration = round((time.time() - start)*60, 2)
+duration = datetime.now() - start
 print("Training completed in : ", duration)
 
 # for TensorFlow ver.<=2.6
