@@ -40,7 +40,8 @@ mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=40)
 # print(mfccs)
 
 
-def features_extractor(file_path):
+def features_extractor(file_path: str):
+    """"The function takes the file path as the argument and extracts the audio data and sample rate of the audio file provided. Then does the MFCCs function to get the Features for the audio data and its sample rate using the Librosa library. The arithmetic mean is then computed using numpy to get the Scaled Features of the MFCC audio data."""
     # load the file (audio)
     audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
     # we extract mfcc
@@ -53,15 +54,20 @@ def features_extractor(file_path):
 # passing through all the audio data an extracting their features in a list
 extractedFeatures = list()
 for index, row in tqdm(metadata.iterrows()):
+    # taking each audio file provided in the dataset
     file_name = os.path.join(os.path.abspath(
         audioDataset_path), 'fold'+str(row["fold"])+'/', str(row["slice_file_name"]))
+    # selecting its 'class'
     finalClass_labels = row["class"]
+    # extracting the Features of it
     features_data = features_extractor(file_name)
+    # adding the features to the Features list
     extractedFeatures.append([features_data, finalClass_labels])
 
 # converting the features to a pandas DataFrame
 extracted_features_df = pandas.DataFrame(
     extractedFeatures, columns=['feature', 'class'])
+# get only the rows with the data
 extracted_features_df.head()
 
 # Split the dataset into independent and dependent datasets
@@ -70,14 +76,18 @@ X = np.array(extracted_features_df['feature'].tolist())
 y = np.array(extracted_features_df['class'].tolist())
 
 # Label Encoding -> Label Encoder
-labelencoder = LabelEncoder()
-y = tf.keras.utils.to_categorical(labelencoder.fit_transform(y))
-# Train Test Split
+labelEncoder = LabelEncoder()
+# converting the classes set to a binary matrix
+y = tf.keras.utils.to_categorical(labelEncoder.fit_transform(y))
+# Train Test Split of 25% test and 75% train
+# a 42 random state to get different train-test sets - "life, universe and everything is 42"
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.25, random_state=42)
 
+# create a 1D matrix for with the binary data of the labels
 num_labels = y.shape[1]
 
+# Create the Neural Network on a Sequential Model to have exactly one tensor input and one tensor output
 # 1.The first layer has 100 neurons. Input shape is 40 according to the number of features with activation function as Relu (Rectified Linear Unit), and to avoid any overfitting, we'll use the Dropout layer at a rate of 0.5.
 # 2.The second layer has 200 neurons with activation function as Relu and the drop out at a rate of 0.5.
 # 3.The third layer again has 100 neurons with activation as Relu and the drop out at a rate of 0.5.
@@ -99,21 +109,27 @@ model.add(tf.keras.layers.Dropout(0.5))
 model.add(tf.keras.layers.Dense(num_labels))
 model.add(tf.keras.layers.Activation('softmax'))
 
+# outputs a summary of the neural network
 model.summary()
 
-# compiling the model
+# Compiling the model
 # Compile defines the loss function, the optimizer and the metrics. We need the compiled model because training uses the loss function and the optimizer
 model.compile(loss='categorical_crossentropy',
               metrics=['accuracy'], optimizer='adam')
 # training the model
 # We will train a model for 100 epochs and batch size as 32. We use callback, which is a checkpoint to know how much time it took to train over data.
+# the neural network is taken wholly 100 times in samples of 32 before updating the model
 num_epochs = 100
 num_batch_size = 32
+# each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
 checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='./audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
+# start the stopwatch
 start = datetime.now()
+# fit the model according to the neural network and the configurations done above
 model.fit(X_train, y_train, batch_size=num_batch_size, epochs=num_epochs,
           validation_data=(X_test, y_test), callbacks=[checkpointer], verbose='1')
+# stop the stopwatch to measure how much time it takes to fit the model on the given Train-Test datasets
 duration = datetime.now() - start
 print("Training completed in : ", duration)
 
@@ -121,18 +137,26 @@ print("Training completed in : ", duration)
 # model.predict_classes(X_test)
 
 # for TensorFlow ver.>=2.6
+# output the prediction
 predict_X = model.predict(X_test)
+# output the class of the predicted response
 classes_X = np.argmax(predict_X, axis=1)
 print(classes_X)
 
 # working on the given audio file
+# taking the MFCCs Features of the given audio file
 mfccs_features = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=40)
+# getting the Scaled Features
 mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
-# Reshape MFCC feature to 2-D array
+# Reshape MFCC feature to a 2D array
 mfccs_scaled_features = mfccs_scaled_features.reshape(1, -1)
+
 # predicted_label=model.predict_classes(mfccs_scaled_features)
+# predict the feature of the Scaled Feature matrix using the trained model
 X_predict = model.predict(mfccs_scaled_features)
+# get the label for the predicted feature
 predicted_label = np.argmax(X_predict, axis=1)
 print(predicted_label)
-prediction_class = labelencoder.inverse_transform(predicted_label)
+# get the class for the predicted label
+prediction_class = labelEncoder.inverse_transform(predicted_label)
 print(prediction_class)
