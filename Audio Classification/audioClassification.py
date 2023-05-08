@@ -20,28 +20,13 @@ import resampy
 
 # start the stopwatch
 start = datetime.now()
-# the given input WAV file to be analysed
-# person talking is identified as 'children_playing'
-# audio_path = "../DSP/dsp/microphone-results.wav"
-# a simulation of a bark done by a person is identified well
-audio_path = "../DSP/microphone-results.wav"
+
+# the path to the metadata & audio dataset(s)
 metadata_path = "../DSP/dsp/Audio Classification/UrbanSound8K/metadata/UrbanSound8K.csv"
 audioDataset_path = "../DSP/dsp/Audio Classification/UrbanSound8K/audio"
 
-# loading the audio and plotting the waveform of the file
-audio_data, sample_rate = librosa.load(audio_path)
-librosa.display.waveshow(audio_data, sr=sample_rate)
-plt.ylabel("Freq. Amplitude")
-plt.show()
-print("The sample rate of the given WAV file is:", sample_rate)
-plt.close()
 # loading the metadata CSV
 metadata = pandas.read_csv(metadata_path)
-
-# doing the Mel-Frequency Cepstral Coefficients
-mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=40)
-# print(mfccs.shape)
-# print(mfccs)
 
 
 def features_extractor(file_path: str):
@@ -188,25 +173,75 @@ predict_X = model.predict(X_test)
 # output the class of the predicted response
 classes_X = np.argmax(predict_X, axis=1)
 print(classes_X)
-
-# working on the given audio file
-# taking the MFCCs Features of the given audio file
-mfccs_features = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=40)
-# getting the Scaled Features
-mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
-# Reshape MFCC feature to a 2D array
-mfccs_scaled_features = mfccs_scaled_features.reshape(1, -1)
-
-# predicted_label=model.predict_classes(mfccs_scaled_features)
-# predict the feature of the Scaled Feature matrix using the trained model
-X_predict = model.predict(mfccs_scaled_features)
-# get the label for the predicted feature
-predicted_label = np.argmax(X_predict, axis=1)
-print(predicted_label)
-# get the class for the predicted label
-prediction_class = labelEncoder.inverse_transform(predicted_label)
-print(prediction_class)
-
 # stop the stopwatch to measure how much time it takes to fit the model on the given Train-Test datasets
 duration = datetime.now() - start
-print("Training & Prediction completed in : ", duration)
+print("Training completed in : ", duration)
+
+
+# the given input WAV file to be analysed
+# person talking is identified as 'children_playing'
+# audio_path = "../DSP/dsp/microphone-results.wav"
+# a simulation of a bark done by a person is identified well
+# audio_path = "../DSP/microphone-results.wav"
+# a street music recording is identified well
+# audio_path = "../DSP/street.wav"
+def runAudioClassification(audio_path: str):
+    """The function runs the Sequential Keras Neural Network model on the given audio file's path given as argument.\n
+    It outputs the prediction and the duration of the prediction."""
+    # loading the audio and plotting the waveform of the file
+    audio_data, sample_rate = librosa.load(audio_path)
+    librosa.display.waveshow(audio_data, sr=sample_rate)
+    plt.ylabel("Freq. Amplitude")
+    plt.show()
+    print("The sample rate of the given WAV file is:", sample_rate)
+    plt.close()
+    # doing the Mel-Frequency Cepstral Coefficients
+    mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=40)
+    # working on the given audio file
+    # taking the MFCCs Features of the given audio file
+    # print(mfccs.shape)
+    # print(mfccs)
+    mfccs_features = librosa.feature.mfcc(
+        y=audio_data, sr=sample_rate, n_mfcc=40)
+    # getting the Scaled Features
+    mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
+    # Reshape MFCC feature to a 2D array
+    mfccs_scaled_features = mfccs_scaled_features.reshape(1, -1)
+
+    # predicted_label=model.predict_classes(mfccs_scaled_features)
+    # predict the feature of the Scaled Feature matrix using the trained model
+    X_predict = model.predict(mfccs_scaled_features)
+    # get the label for the predicted feature
+    predicted_label = np.argmax(X_predict, axis=1)
+    print(predicted_label)
+    # get the class for the predicted label
+    prediction_class = labelEncoder.inverse_transform(predicted_label)
+    print(prediction_class)
+
+
+# implementation to run the classification of different audio files given from the terminal with max 3 retries if bad selection
+run = True
+bad = 0
+while (run):
+    try:
+        audio_path = '../DSP/' + \
+            str(input("What is the name of the WAV file that you want to use?\n"))
+    except:
+        print("Wrong file path!\nTry again...\n")
+        bad += 1
+        continue
+    runAudioClassification(audio_path=audio_path)
+    print('\n')
+    ask = str(
+        input("Do you wish to continue with a different file? (y/n)"+'\n'))
+    if ask == 'y' or ask == 'Y':
+        bad = 0
+        continue
+    elif ask == 'n' or ask == 'N':
+        break
+    elif (ask != 'y' or ask != 'Y') or (ask != 'n' or ask != 'N') and bad != 3:
+        print("Wrong selection!\nTry again...\n")
+        bad += 1
+    if bad == 3:
+        print("Exiting...Too many wrong attempts.")
+        break
