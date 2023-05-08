@@ -158,7 +158,7 @@ model.compile(loss='categorical_crossentropy',
 num_epochs = 100
 num_batch_size = 32
 # each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
-checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='./audio_classification.hdf5',
+checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='./DSP/dsp/audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
 # fit the model according to the neural network and the configurations done above
 model.fit(X_train, y_train, batch_size=num_batch_size, epochs=num_epochs,
@@ -182,7 +182,7 @@ print("Training completed in : ", duration)
 # person talking is identified as 'children_playing'
 # audio_path = "../DSP/dsp/microphone-results.wav"
 # a simulation of a bark done by a person is identified well
-# audio_path = "../DSP/microphone-results.wav"
+# audio_path = "../DSP/bark.wav"
 # a street music recording is identified well
 # audio_path = "../DSP/street.wav"
 def runAudioClassification(audio_path: str):
