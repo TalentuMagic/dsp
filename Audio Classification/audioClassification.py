@@ -15,7 +15,11 @@ import numpy as np
 from tqdm import tqdm
 import os
 from datetime import datetime
+import asyncio
+import resampy
 
+# start the stopwatch
+start = datetime.now()
 # the given input WAV file to be analysed
 # person talking is identified as 'children_playing'
 # audio_path = "../DSP/dsp/microphone-results.wav"
@@ -30,7 +34,7 @@ librosa.display.waveshow(audio_data, sr=sample_rate)
 plt.ylabel("Freq. Amplitude")
 plt.show()
 print("The sample rate of the given WAV file is:", sample_rate)
-
+plt.close()
 # loading the metadata CSV
 metadata = pandas.read_csv(metadata_path)
 
@@ -51,19 +55,66 @@ def features_extractor(file_path: str):
     return mfccs_scaled_features
 
 
-# passing through all the audio data an extracting their features in a list
-extractedFeatures = list()
-for index, row in tqdm(metadata.iterrows()):
-    # taking each audio file provided in the dataset
-    file_name = os.path.join(os.path.abspath(
-        audioDataset_path), 'fold'+str(row["fold"])+'/', str(row["slice_file_name"]))
-    # selecting its 'class'
+async def extractFeature(row):
+    """Extract the Features Data and Class Labels and output them as a list - used for async threading"""
+    # Creating a thread for each audio file path
+    file_name = await asyncio.to_thread(os.path.join, os.path.abspath(audioDataset_path), 'fold'+str(row["fold"])+'/', str(row["slice_file_name"]))
+    # Getting the labels for each class
     finalClass_labels = row["class"]
-    # extracting the Features of it
-    features_data = features_extractor(file_name)
-    # adding the features to the Features list
-    extractedFeatures.append([features_data, finalClass_labels])
+    # Creating a thread for each feature extraction, for each threaded file
+    features_data = await asyncio.to_thread(features_extractor, file_name)
+    return [features_data, finalClass_labels]
 
+# Creating the list with all the extracted features for all audio files in the dataset
+extractedFeatures = list()
+# passing through all the audio data sequentially an extracting their features in a list
+# for index, row in tqdm(metadata.iterrows()):
+#     # taking each audio file provided in the dataset
+#     file_name = os.path.join(os.path.abspath(
+#         audioDataset_path), 'fold'+str(row["fold"])+'/', str(row["slice_file_name"]))
+#     # selecting its 'class'
+#     finalClass_labels = row["class"]
+#     # extracting the Features of it
+#     features_data = features_extractor(file_name)
+#     # adding the features to the Features list
+#     extractedFeatures.append([features_data, finalClass_labels])
+
+
+async def extractedFeatures_func():
+    """Passing through all the audio data using asyncio and extracting the futures for each row, appending to the extractedFeatures list as the output"""
+    # Passing through all the audio data using asyncio
+    global extractedFeatures
+    tasks = []
+    # Taking all the rows in the dataset
+    for index, row in tqdm(metadata.iterrows()):
+        # creating a task for each row and appending it to the tasks list
+        task = asyncio.create_task(extractFeature(row))  # type: ignore
+        tasks.append(task)
+    # running the task in async and exporting the results to the extractedFeatures list
+    extractedFeatures = await asyncio.gather(*tasks)
+# running the async job
+asyncio.run(extractedFeatures_func())
+
+# stop the stopwatch to measure how much time it takes to fit the model on the given Train-Test datasets
+duration = datetime.now() - start
+print("Audio Dataset Features reading completed in : ", duration)
+# To see where the work is done - currently using CPU only
+ok = False
+while (ok != True):
+    debug = str(
+        input("Do you wish to see the Log for Device Placement? (y/n)"+'\n'))
+    if debug == 'y' or debug == 'Y':
+        tf.debugging.set_log_device_placement(True)
+        ok = True
+    elif debug == 'n' or debug == 'N':
+        tf.debugging.set_log_device_placement(False)
+        ok = True
+    elif (debug != 'y' or debug != 'Y') or (debug != 'n' or debug != 'N'):
+        pass
+
+
+# start the stopwatch
+start = datetime.now()
 # converting the features to a pandas DataFrame
 extracted_features_df = pandas.DataFrame(
     extractedFeatures, columns=['feature', 'class'])
@@ -124,14 +175,9 @@ num_batch_size = 32
 # each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
 checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='./audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
-# start the stopwatch
-start = datetime.now()
 # fit the model according to the neural network and the configurations done above
 model.fit(X_train, y_train, batch_size=num_batch_size, epochs=num_epochs,
           validation_data=(X_test, y_test), callbacks=[checkpointer], verbose='1')
-# stop the stopwatch to measure how much time it takes to fit the model on the given Train-Test datasets
-duration = datetime.now() - start
-print("Training completed in : ", duration)
 
 # for TensorFlow ver.<=2.6
 # model.predict_classes(X_test)
@@ -160,3 +206,7 @@ print(predicted_label)
 # get the class for the predicted label
 prediction_class = labelEncoder.inverse_transform(predicted_label)
 print(prediction_class)
+
+# stop the stopwatch to measure how much time it takes to fit the model on the given Train-Test datasets
+duration = datetime.now() - start
+print("Training & Prediction completed in : ", duration)
