@@ -20,10 +20,9 @@ import resampy
 
 # start the stopwatch
 start = datetime.now()
-
 # the path to the metadata & audio dataset(s)
-metadata_path = "../DSP/dsp/Audio Classification/UrbanSound8K/metadata/UrbanSound8K.csv"
-audioDataset_path = "../DSP/dsp/Audio Classification/UrbanSound8K/audio"
+metadata_path = "../Audio Classification/UrbanSound8K/metadata/UrbanSound8K.csv"
+audioDataset_path = "../Audio Classification/UrbanSound8K/audio"
 
 # loading the metadata CSV
 metadata = pandas.read_csv(metadata_path)
@@ -158,7 +157,7 @@ model.compile(loss='categorical_crossentropy',
 num_epochs = 100
 num_batch_size = 32
 # each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
-checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='./DSP/dsp/audio_classification.hdf5',
+checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='../Audio Classification/audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
 # fit the model according to the neural network and the configurations done above
 model.fit(X_train, y_train, batch_size=num_batch_size, epochs=num_epochs,
@@ -180,11 +179,11 @@ print("Training completed in : ", duration)
 
 # the given input WAV file to be analysed
 # person talking is identified as 'children_playing'
-# audio_path = "../DSP/dsp/microphone-results.wav"
+# audio_path = "../DSP-NNGA/dsp-nnga/microphone-results.wav"
 # a simulation of a bark done by a person is identified well
-# audio_path = "../DSP/bark.wav"
+# audio_path = "../DSP-NNGA/bark.wav"
 # a street music recording is identified well
-# audio_path = "../DSP/street.wav"
+# audio_path = "../DSP-NNGA/street.wav"
 def runAudioClassification(audio_path: str):
     """The function runs the Sequential Keras Neural Network model on the given audio file's path given as argument.\n
     It outputs the prediction and the duration of the prediction."""
@@ -224,7 +223,7 @@ run = True
 bad = 0
 while (run):
     try:
-        audio_path = '../DSP/' + \
+        audio_path = '../' + \
             str(input("What is the name of the WAV file that you want to use?\n"))
     except:
         print("Wrong file path!\nTry again...\n")
