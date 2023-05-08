@@ -225,11 +225,12 @@ while (run):
     try:
         audio_path = '../' + \
             str(input("What is the name of the WAV file that you want to use?\n"))
+        runAudioClassification(audio_path=audio_path)
     except:
         print("Wrong file path!\nTry again...\n")
         bad += 1
         continue
-    runAudioClassification(audio_path=audio_path)
+    print(metadata['class'])
     print('\n')
     ask = str(
         input("Do you wish to continue with a different file? (y/n)"+'\n'))
