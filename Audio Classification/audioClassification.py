@@ -216,10 +216,10 @@ def runAudioClassification(audio_path: str):
     # get the class for the predicted label
     prediction_class = labelEncoder.inverse_transform(predicted_label)
     print(prediction_class)
-    class_counts = metadata['class'].value_counts()
     plt.figure(figsize=(15, 5))
     plt.grid()
-    seaborn.countplot(x=metadata['class'], order=class_counts.index)
+    seaborn.countplot(x=metadata['class'],
+                      order=metadata['class'].value_counts().index)
     plt.title("Count of records in each class")
     plt.xticks(rotation="horizontal")
     plt.show()
