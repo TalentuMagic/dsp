@@ -27,12 +27,14 @@ audioDataset_path = "../Audio Classification/UrbanSound8K/audio"
 # loading the metadata CSV
 metadata = pandas.read_csv(metadata_path)
 
+# extracting the Mel-Frequency Cepstral Coefficients
+
 
 def features_extractor(file_path: str):
     """"The function takes the file path as the argument and extracts the audio data and sample rate of the audio file provided. Then does the MFCCs function to get the Features for the audio data and its sample rate using the Librosa library. The arithmetic mean is then computed using numpy to get the Scaled Features of the MFCC audio data."""
     # load the file (audio)
     audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
-    # we extract mfcc
+    # we extract mfccs
     mfccs_features = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
     # in order to find out scaled feature we do mean of transpose of value
     mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
