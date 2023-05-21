@@ -21,8 +21,8 @@ import resampy
 # start the stopwatch
 start = datetime.now()
 # the path to the metadata & audio dataset(s)
-metadata_path = "./dsp-nnga/Audio Classification/UrbanSound8K/metadata/UrbanSound8K.csv"
-audioDataset_path = "./dsp-nnga/Audio Classification/UrbanSound8K/audio"
+metadata_path = "./UrbanSound8K/metadata/UrbanSound8K.csv"
+audioDataset_path = "./UrbanSound8K/audio"
 
 # loading the metadata CSV
 metadata = pandas.read_csv(metadata_path)
