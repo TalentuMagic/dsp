@@ -21,8 +21,8 @@ import resampy
 # start the stopwatch
 start = datetime.now()
 # the path to the metadata & audio dataset(s)
-metadata_path = "../Audio Classification/UrbanSound8K/metadata/UrbanSound8K.csv"
-audioDataset_path = "../Audio Classification/UrbanSound8K/audio"
+metadata_path = "./dsp-nnga/Audio Classification/UrbanSound8K/metadata/UrbanSound8K.csv"
+audioDataset_path = "./dsp-nnga/Audio Classification/UrbanSound8K/audio"
 
 # loading the metadata CSV
 metadata = pandas.read_csv(metadata_path)
@@ -156,8 +156,8 @@ model.compile(loss='categorical_crossentropy',
 # training the model
 # We will train a model for 100 epochs and batch size as 32. We use callback, which is a checkpoint to know how much time it took to train over data.
 # the neural network is taken wholly 100 times in samples of 32 before updating the model
-num_epochs = 100
-num_batch_size = 32
+num_epochs = 128
+num_batch_size = 64
 # each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
 checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='../Audio Classification/audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
