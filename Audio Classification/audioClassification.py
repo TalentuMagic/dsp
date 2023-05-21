@@ -130,15 +130,15 @@ num_labels = y.shape[1]
 # 3.The third layer again has 100 neurons with activation as Relu and the drop out at a rate of 0.5.
 model = tf.keras.Sequential()
 # first layer
-model.add(tf.keras.layers.Dense(100, input_shape=(40,)))
+model.add(tf.keras.layers.Dense(128, input_shape=(40,)))
 model.add(tf.keras.layers.Activation('relu'))
 model.add(tf.keras.layers.Dropout(0.5))
 # second layer
-model.add(tf.keras.layers.Dense(200))
+model.add(tf.keras.layers.Dense(256))
 model.add(tf.keras.layers.Activation('relu'))
 model.add(tf.keras.layers.Dropout(0.5))
 # third layer
-model.add(tf.keras.layers.Dense(100))
+model.add(tf.keras.layers.Dense(128))
 model.add(tf.keras.layers.Activation('relu'))
 model.add(tf.keras.layers.Dropout(0.5))
 # final layer
@@ -154,10 +154,10 @@ model.summary()
 model.compile(loss='categorical_crossentropy',
               metrics=['accuracy'], optimizer='adam')
 # training the model
-# We will train a model for 100 epochs and batch size as 32. We use callback, which is a checkpoint to know how much time it took to train over data.
-# the neural network is taken wholly 100 times in samples of 32 before updating the model
-num_epochs = 128
-num_batch_size = 64
+# We will train a model for 32 epochs and batch size as 32. We use callback, which is a checkpoint to know how much time it took to train over data.
+# the neural network is taken wholly 32 times in samples of 32 before updating the model
+num_epochs = 16
+num_batch_size = 32
 # each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
 checkpointer = tf.keras.callbacks.ModelCheckpoint(filepath='../Audio Classification/audio_classification.hdf5',
                                                   verbose=1, save_best_only=True)
@@ -239,6 +239,9 @@ while (run):
     except:
         print("Wrong file path!\nTry again...\n")
         bad += 1
+        if bad == 3:
+            print("Exiting...Too many wrong attempts.")
+            break
         continue
     print(metadata['class'])
     print('\n')
