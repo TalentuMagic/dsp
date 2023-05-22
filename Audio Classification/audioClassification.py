@@ -119,7 +119,7 @@ y = tf.keras.utils.to_categorical(labelEncoder.fit_transform(y))
 # Train Test Split of 25% test and 75% train
 # a 42 random state to get different train-test sets - "life, universe and everything is 42"
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.25, random_state=42)
+    X, y, test_size=0.20, random_state=42)
 
 # create a 1D matrix for with the binary data of the labels
 num_labels = y.shape[1]
@@ -154,8 +154,8 @@ model.summary()
 model.compile(loss='categorical_crossentropy',
               metrics=['accuracy'], optimizer='adam')
 # training the model
-# We will train a model for 32 epochs and batch size as 32. We use callback, which is a checkpoint to know how much time it took to train over data.
-# the neural network is taken wholly 32 times in samples of 32 before updating the model
+# We will train a model for 16 epochs and batch size as 32. We use callback, which is a checkpoint to know how much time it took to train over data.
+# the neural network is taken wholly 16 times in samples of 32 before updating the model
 num_epochs = 16
 num_batch_size = 32
 # each time the model gets updated, the checkpointer updated the .hdf5 file (Hierarchical Data Format)
@@ -200,12 +200,13 @@ def runAudioClassification(audio_path: str):
     mfccs = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=40)
     # working on the given audio file
     # taking the MFCCs Features of the given audio file
-    # print(mfccs.shape)
-    # print(mfccs)
+    print(mfccs.shape)
+    print(mfccs)
     mfccs_features = librosa.feature.mfcc(
         y=audio_data, sr=sample_rate, n_mfcc=40)
     # getting the Scaled Features
     mfccs_scaled_features = np.mean(mfccs_features.T, axis=0)
+    print(mfccs_scaled_features)
     # Reshape MFCC feature to a 2D array
     mfccs_scaled_features = mfccs_scaled_features.reshape(1, -1)
 
